@@ -1,35 +1,84 @@
-let friends = ["Daniel", "Ronnie", "Barbara", " Jared", "Lacon"];
-let locations = ["Library", "Kitchen", "Bedroom", "Living Room", "Study", "Parlor", 
-"Hall", "Bathroom", "Courtyard", "PoolHouse"];
-let weapons = ["Posion", "Rope", "Revolver", "Knife", "Bat", "Choking", "Crowbar", "Shotgun",
-"Sword", "Hammer", "Fountain", "Spike Trap", "Bleach", "Blunt Weapon", "Beating", "Candlestick",
-"Wrench", "Chloroform", "Cliff", "Cynaide"];
+var sentences = ['ten ate neite ate nee enet ite ate inet ent eate',
+'Too ato too nOt enot one totA not anot tOO aNot', 
+'oat itain oat tain nate eate tea anne inant nean', 
+'itant eate anot eat nato inate eat anot tain eat', 
+'nee ene ate ite tent tiet ent ine ene ete ene ate'];
+
+let sentenceIndex = -1;
+let characterIndex = 0;
+let mistakes = 0;
+let time;
 
 $(document).ready(function(){
-    for(let i = 1; i <= 100; i++){
-        let h3 = $("<h3>Clue " + i + "</h3>");
-        h3.click(function(){
-            alert("Clue " + i + ": " +
-            friends[i%5] + " did it in the " +
-            locations[i%10] + " with a " + 
-            weapons[i%20])});
-        $("body").append(h3);
-    }
-})
+    $("#keyboard-upper-container").hide();
+    loadNextSentence();
+});
 
-function createH3(i){
-    let h3 = $("<h3>Clue " + i + "</h3>");
-    h3.click(function(){
-        alert("Clue " + i + ": " +
-        friends[i%5] + " did it in the " +
-        locations[i%10] + " with a " + 
-        weapons[i%20])}).bind(i);
-    $("body").append(h3);
+$(document).keydown(function(keyPressed){
+    var key = keyPressed.which;
+    if(key == 16){
+        $("#keyboard-upper-container").show();
+        $("#keyboard-lower-container").hide();
+    }
+});
+
+$(document).keyup(function(keyPressed){
+    var key = keyPressed.which;
+    if(key == 16){
+        $("#keyboard-upper-container").hide();
+        $("#keyboard-lower-container").show();
+    }
+});
+
+$(document).keypress(function(keyPressed){
+        let key = $('#' + keyPressed.keyCode);
+        key.css({"background-color": "aqua",
+        "font-weight": "bold"
+        });
+        if(sentences[sentenceIndex].charAt(characterIndex) === String.fromCharCode(keyPressed.keyCode)){
+            $("#feedback").append($('<span class ="glyphicon glyphicon-ok" aria-hidden="true"></span'));
+        }else{
+            $("#feedback").append($('<span class ="glyphicon glyphicon-remove" aria-hidden="true"></span')); 
+            mistakes++;           
+        }
+        moveThroughSentence();
+        $(document).keyup(function(){
+            key.css({'background-color': '',
+            "font-weight": "normal"
+        });
+    });
+});
+
+function moveThroughSentence(){
+    characterIndex++;
+    if(characterIndex >= sentences[sentenceIndex].length){
+        loadNextSentence()
+    }else{
+        $("#yellow-block").css('left', '+=17.5px');
+        $("#target-letter").text(sentences[sentenceIndex].charAt(characterIndex));
+    }
+};
+
+function loadNextSentence(){
+    if(sentenceIndex === -1) time = Date.now();
+    sentenceIndex++;
+    if(sentenceIndex >= sentences.length){
+        let wordsPerMin = 57 / 2 - 2 * mistakes; 
+        if(confirm("You hsve finished the game! Your WPM is: " + wordsPerMin + "\nWould you like to play again?")){
+            restartGame();
+        }
+    }else{
+        $("#sentence").text(sentences[sentenceIndex]);
+        $("#yellow-block").css('left', '');
+        characterIndex = 0;
+        $("#target-letter").text(sentences[sentenceIndex].charAt(characterIndex)); 
+        $("#feedback").empty();       
+    }
 }
 
-function createAlert(num){
-    return function(){alert("Clue " + num + ": " +
-    friends[num%5] + " did it in the " +
-    locations[num%10] + " with a " + 
-    weapons[num % 20])};
+function restartGame(){
+    sentenceIndex = 0;
+    characterIndex = 0;
+    mistakes = 0;
+    loadNextSentence();
 }
